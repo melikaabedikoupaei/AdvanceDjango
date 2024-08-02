@@ -5,7 +5,8 @@ from django.contrib.auth.models import (
     BaseUserManager
 )
 from django.utils.translation import gettext_lazy as _
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class CustomUserManager(BaseUserManager):
     """
@@ -67,3 +68,11 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.email
+
+@receiver(post_save, sender=User)
+def save_profile(sender, instance, created, **kwargs):
+    """
+    Signal for post creating a user which activates when a user being created ONLY
+    """
+    if created:
+        Profile.objects.create(user=instance)
